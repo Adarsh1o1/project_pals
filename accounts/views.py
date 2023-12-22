@@ -90,7 +90,6 @@ class ChangePassword(APIView):
 class profile(generics.RetrieveUpdateAPIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
-    queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     def get_object(self):
         # Retrieve the profile of the authenticated user
