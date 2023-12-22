@@ -10,5 +10,6 @@ class Post(models.Model):
     description = models.CharField(max_length= 250)
     posted_on = models.DateTimeField(auto_now_add=True)
     email = models.EmailField(default='')
+    
     def __str__(self) -> str:
         return self.title

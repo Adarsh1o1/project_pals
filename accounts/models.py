@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import random
 from django.core.cache import cache
+
 # Create your models here.
 
 class User(AbstractBaseUser):
@@ -80,3 +81,25 @@ def send_mail_otp(sender, instance, created, **kwargs):
             send_mail(subject, message, email_from, recipient_list)
         except Exception as e:
             print(e)
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    full_name =models.CharField(max_length=300)
+    bio = models.CharField(max_length=500)
+    image = models.ImageField(default="default.png", upload_to="media/user_images/")
+    verified = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.full_name
+    
+@receiver(post_save, sender=User)    
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user= instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+
+    

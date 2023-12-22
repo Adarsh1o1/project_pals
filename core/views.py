@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from .models import *
 from .serializers import *
 from .renderers import UserRenderer   
-from .helpers import send_connect_mail    
+from .helpers import send_connect_mail   
+import random 
 
 @renderer_classes([UserRenderer])
 @permission_classes([IsAuthenticated])
@@ -34,9 +35,10 @@ class create_post(APIView):
 @permission_classes([IsAuthenticated])
 class show_all_posts(APIView):
     def get(self, request):
-        posts = Post.objects.all()
+        posts = list(Post.objects.all())
+        random.shuffle(posts)
+        random_posts = posts[:]
         serializer = User_Post_serializer(posts, many=True)
-        print(posts) 
         return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
 
 @renderer_classes([UserRenderer])
@@ -44,20 +46,7 @@ class show_all_posts(APIView):
 class connect(APIView):
     def post(self, request):
         data = request.data
-        print(request.user)
         initiater = User.objects.get(email = data.get('email'))
-        print(initiater.email)
-        send_connect_mail(initiater,request.user)
-        return Response({'status': status.HTTP_200_OK})
-        
-from django.core.mail import send_mail
-from django.core.cache import cache
-from django.conf import settings
-
-def send_connect_mail(initiater, contributer,): 
-    subject = 'connect'
-    message = f'Hi {initiater}, {contributer} wants to connect with you, their email id is {contributer.email}'
-    email_from = settings.EMAIL_HOST_USER
-    recipient_list = [initiater.email]
-    send_mail(subject, message, email_from, recipient_list)
-    return True
+        if(send_connect_mail(initiater,request.user)):
+            return Response({'status': status.HTTP_200_OK, "message": "mail sent successfully"})
+        return Response({'status':status.HTTP_400_BAD_REQUEST, 'msg': 'something went wrong'},status=status.HTTP_400_BAD_REQUEST)        

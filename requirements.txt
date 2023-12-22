@@ -1,0 +1,6 @@
+#requirements
+Django==4.2.4
+djangorestframework==3.14.0
+# reddis:- pip install redis
+djangorestframework-simplejwt==5.2.2
+django-cors-headers==4.2.0

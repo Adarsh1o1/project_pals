@@ -1,11 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import User,Profile
 # Register your models here.
 
 class UserAdminModel(BaseUserAdmin):
-
-
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
@@ -31,6 +29,12 @@ class UserAdminModel(BaseUserAdmin):
     ordering = ["email"]
     filter_horizontal = []
 
+class profileAdmin(admin.ModelAdmin):
+    list_display = ["user","full_name", "verified","image"]
+    list_editable = ["verified"]
+
 
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdminModel)
+admin.site.register(Profile, profileAdmin)
+

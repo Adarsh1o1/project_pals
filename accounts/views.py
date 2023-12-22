@@ -10,6 +10,11 @@ from .serializers import *
 from .helpers import *
 from .renderers import UserRenderer        
 from rest_framework_simplejwt.tokens import RefreshToken 
+from rest_framework import generics
+from django.db.models import Q
+from django.contrib.auth.models import AnonymousUser
+
+
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -26,8 +31,7 @@ class RegisterView(APIView):
         serializer = UserSerializer(data= request.data)
         if serializer.is_valid():                       
             user = serializer.save()
-            token = get_tokens_for_user(user)
-            return Response({"status":200,'token':token ,"msg": "otp sent to your email"},status=status.HTTP_201_CREATED)
+            return Response({"status":200 , "msg": "otp sent to your email"},status=status.HTTP_201_CREATED)
 
         return Response({'errors': serializer.errors},status=status.HTTP_400_BAD_REQUEST)
 
@@ -42,7 +46,7 @@ class LoginView(APIView):
             if user is not None:
                 token = get_tokens_for_user(user)
                 login(request,user)
-                return Response({'msg':'login success','token':token,'status': status.HTTP_200_OK})
+                return Response({'msg':'login success',"username":f"{request.user.first_name}",'token':token,'status': status.HTTP_200_OK})
         else:
            return Response({'errors': {'non_fields_errors': ['Email or password is incorrect']}},status=status.HTTP_404_NOT_FOUND)
         
@@ -83,10 +87,47 @@ class ChangePassword(APIView):
         return Response({'status':status.HTTP_400_BAD_REQUEST, 'msg': 'something went wrong'},status=status.HTTP_400_BAD_REQUEST)
 
 
-class profile(APIView):
+class profile(generics.RetrieveUpdateAPIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
-    def get(self, request):
-        serializer = ProfileSerializer(request.user)
-        return Response({'status': status.HTTP_202_ACCEPTED, 'payload':serializer.data})
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
     
+class searchUser(generics.ListAPIView):
+    # permission_classes = [IsAuthenticated]
+    # renderer_classes = [UserRenderer]
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        username =self.kwargs['username']
+        logged_in_user = self.request.user
+    #     users = Profile.objects.filter(
+    #         Q(user__username__icontains=username)|
+    #         Q(full_name__icontains=username)|
+    #         Q(user__email__icontains=username)
+    #         # ~Q(user=logged_in_user) 
+    #     )
+
+    #     if not users.exists:
+    #         return Response({"details":"No users found"}, status=status.HTTP_404_NOT_FOUND)
+        
+    #     serializer = self.get_serializer(users, many=True)
+    #     return Response(serializer.data)
+        
+        if not isinstance(logged_in_user, AnonymousUser):
+            profiles = Profile.objects.filter(
+                Q(user__username__icontains=username) |
+                Q(full_name__icontains=username) |
+                Q(user__email__icontains=username),
+                ~Q(user=logged_in_user)
+            )
+        else:
+            profiles = Profile.objects.filter(
+                Q(user__username__icontains=username) |
+                Q(full_name__icontains=username) |
+                Q(user__email__icontains=username)
+            )
+
+        serializer = self.get_serializer(profiles, many=True)
+        return Response(serializer.data)

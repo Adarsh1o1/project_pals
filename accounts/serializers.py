@@ -1,9 +1,10 @@
 from .models import *
-from .models import User
+from .models import User,Profile
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
 
 class UserSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
+    password2 = serializers.CharField(style={'input_type':'password'}, write_only=True, validators=[validate_password])
     class Meta:
         model = User
         fields = ['email','username', 'password', 'password2','otp','first_name','last_name']
@@ -40,19 +41,10 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password']
 
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # fields = '__all__'
-        exclude = ['password',"otp",
-    "email_token",
-    "forget_password",
-    "is_active",
-    "is_admin",]
         
 class ChangePasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(style= {'input_type':'password'},write_only = True)
-    password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
+    password = serializers.CharField(style= {'input_type':'password'},write_only = True, validators=[validate_password])
+    password2 = serializers.CharField(style={'input_type':'password'}, write_only=True, validators=[validate_password])
     class Meta:
         fields = ['password','password2']
     
@@ -65,4 +57,9 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(password)
         user.save()
         return attrs
+    
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["full_name", "bio","verified","image"]
     
