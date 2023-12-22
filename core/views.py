@@ -10,6 +10,7 @@ from .serializers import *
 from .renderers import UserRenderer   
 from .helpers import send_connect_mail   
 import random 
+from rest_framework import generics
 
 @renderer_classes([UserRenderer])
 @permission_classes([IsAuthenticated])
@@ -49,4 +50,14 @@ class connect(APIView):
         initiater = User.objects.get(email = data.get('email'))
         if(send_connect_mail(initiater,request.user)):
             return Response({'status': status.HTTP_200_OK, "message": "mail sent successfully"})
-        return Response({'status':status.HTTP_400_BAD_REQUEST, 'msg': 'something went wrong'},status=status.HTTP_400_BAD_REQUEST)        
+        return Response({'status':status.HTTP_400_BAD_REQUEST, 'msg': 'something went wrong'},status=status.HTTP_400_BAD_REQUEST)    
+
+
+class show_user_post(generics.ListAPIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    # queryset
+    serializer_class = User_Post_serializer
+    
+    def get_queryset(self):
+       return Post.objects.filter(user=self.request.user)

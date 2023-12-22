@@ -92,28 +92,31 @@ class profile(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+    def get_object(self):
+        # Retrieve the profile of the authenticated user
+        return self.request.user.profile
     
 class searchUser(generics.ListAPIView):
-    # permission_classes = [IsAuthenticated]
-    # renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [UserRenderer]
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
 
     def list(self, request, *args, **kwargs):
         username =self.kwargs['username']
         logged_in_user = self.request.user
-    #     users = Profile.objects.filter(
-    #         Q(user__username__icontains=username)|
-    #         Q(full_name__icontains=username)|
-    #         Q(user__email__icontains=username)
-    #         # ~Q(user=logged_in_user) 
-    #     )
+        # users = Profile.objects.filter(
+        #     Q(user__username__icontains=username)|
+        #     Q(full_name__icontains=username)|
+        #     Q(user__email__icontains=username)
+        #     # ~Q(user=logged_in_user) 
+        # )
 
-    #     if not users.exists:
-    #         return Response({"details":"No users found"}, status=status.HTTP_404_NOT_FOUND)
+        # if not users.exists():
+        #     return Response({"details":"No users found"}, status=status.HTTP_404_NOT_FOUND)
         
-    #     serializer = self.get_serializer(users, many=True)
-    #     return Response(serializer.data)
+        # serializer = self.get_serializer(users, many=True)
+        # return Response(serializer.data)
         
         if not isinstance(logged_in_user, AnonymousUser):
             profiles = Profile.objects.filter(
@@ -128,6 +131,7 @@ class searchUser(generics.ListAPIView):
                 Q(full_name__icontains=username) |
                 Q(user__email__icontains=username)
             )
-
+        if not profiles.exists():
+            return Response({"details":"No users found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(profiles, many=True)
         return Response(serializer.data)
