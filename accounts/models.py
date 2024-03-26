@@ -52,19 +52,6 @@ class User(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_admin
 
-def otp_mail(email, user):
-    if cache.get(email):
-        return False
-    otp = random.randint(1000,9999)
-    cache.set(email, otp, timeout=60)
-    user.otp = otp
-    user.save()
-    subject = 'Your email needs to be verified'
-    message = f'Your otp to verify your email is {otp}'
-    email_from = settings.EMAIL_HOST_USER
-    recipient_list = [user.email]
-    send_mail(subject, message, email_from, recipient_list)    
-    return True
 
 @receiver(post_save, sender = User)
 def send_mail_otp(sender, instance, created, **kwargs):
@@ -81,6 +68,20 @@ def send_mail_otp(sender, instance, created, **kwargs):
             send_mail(subject, message, email_from, recipient_list)
         except Exception as e:
             print(e)
+
+def otp_mail(email, user):
+    if cache.get(email):
+        return False
+    otp = random.randint(1000,9999)
+    cache.set(email, otp, timeout=60)
+    user.otp = otp
+    user.save()
+    subject = 'Your email needs to be verified'
+    message = f'Your otp to verify your email is {otp}'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [user.email]
+    send_mail(subject, message, email_from, recipient_list)    
+    return True
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -102,11 +103,13 @@ class Profile(models.Model):
 @receiver(post_save, sender=User)    
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user= instance)
+        profile = Profile.objects.create(user= instance)
+        profile.save()
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#         profile = instance.profile
+#         profile.save()
 
 
     

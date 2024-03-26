@@ -166,6 +166,7 @@ EMAIL_USE_SSL = False
 #     }
 # }
 CORS_ALLOWED_ORIGINS = [
+    "https://4c1f-45-118-156-64.ngrok-free.app",
     "https://example.com",
     "https://sub.example.com",
     "http://localhost:3000",

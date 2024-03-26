@@ -90,7 +90,7 @@ class ChangePassword(APIView):
 class profile(generics.RetrieveUpdateAPIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
-    serializer_class = ProfileSerializer
+    serializer_class = MyProfileSerializer
     def get_object(self):
         # Retrieve the profile of the authenticated user
         return self.request.user.profile
@@ -103,6 +103,7 @@ class searchUser(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         username =self.kwargs['username']
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
         logged_in_user = self.request.user
         # users = Profile.objects.filter(
         #     Q(user__username__icontains=username)|

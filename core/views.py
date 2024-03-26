@@ -21,7 +21,7 @@ class create_post(APIView):
         serializer = Post_serializer(data = data, context={'user':request.user,'username':request.user})
         if serializer.is_valid(raise_exception=True):
             print(user,data)
-            return Response({"status":200,"msg": "Post created successfully"},status=status.HTTP_200_OK)
+            return Response({"status":200,"m  sg": "Post created successfully"},status=status.HTTP_200_OK)
         else:
             return Response({'status':status.HTTP_400_BAD_REQUEST, 'msg': 'something went wrong'},status=status.HTTP_400_BAD_REQUEST)
 
@@ -30,7 +30,14 @@ class create_post(APIView):
     def put(self):
         pass
     def delete(self, request):
-        pass
+        id = request.data.get("id")
+        print(id)
+        try:
+            post = Post.objects.get(id = id)
+        except Post.DoesNotExist:
+            return Response({"response": "No such post found"}, status=status.HTTP_404_NOT_FOUND)
+        post.delete()
+        return Response({"response": "Post deleted successfully"}, status=status.HTTP_202_ACCEPTED)
 
 @renderer_classes([UserRenderer])
 @permission_classes([IsAuthenticated])
@@ -56,8 +63,23 @@ class connect(APIView):
 class show_user_post(generics.ListAPIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
-    # queryset
     serializer_class = User_Post_serializer
     
     def get_queryset(self):
        return Post.objects.filter(user=self.request.user)
+    
+
+class show_any_user_post(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    # queryset
+    serializer_class = User_Post_serializer
+    
+    def get(self, request):
+       data = request.data
+       user = User.objects.get(username = data.get('username'))
+       print(user)
+       posts=list(Post.objects.filter(user=user))
+       print(posts)
+       serializer = User_Post_serializer(posts, many = True)
+       return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
