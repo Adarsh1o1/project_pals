@@ -32,5 +32,3 @@ class chatRoom(APIView):
         else:
             ChatRoom.objects.create(name = name, sender = username1, receiver= username2)
         return Response({'room_name':name, 'sender':f'{username1}', 'receiver':f'{username2}'},status=status.HTTP_200_OK)
-    
-    
