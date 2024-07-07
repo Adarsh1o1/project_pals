@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,8 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'accounts',
     'core',
+    'chatapp',
     'corsheaders',
-    'chatapp'
 ]
 
 MIDDLEWARE = [
@@ -77,7 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'project_pals.wsgi.application'
-# ASGI_APPLICATION = 'project_pals.asgi.application'
+ASGI_APPLICATION = 'project_pals.asgi.application'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -165,6 +167,16 @@ EMAIL_USE_SSL = False
 #         }
 #     }
 # }
+
+# settings.py
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
+
 CORS_ALLOWED_ORIGINS = [
     "https://4c1f-45-118-156-64.ngrok-free.app",
     "https://example.com",

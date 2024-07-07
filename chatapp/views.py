@@ -18,15 +18,19 @@ from .models import *
 class chatRoom(APIView):
     permission_classes = [IsAuthenticated]
     renderer_classes = [UserRenderer]
+
     def post(self, request, ):
         data = request.data.get('receiver')
         username2 = get_object_or_404(User,username=data)
         username1 = request.user
-        print(username2)
-        chatRoom.name = f"{username1} and {username2}'s room"
-        existing_chat_room = ChatRoom.objects.filter(name=chatRoom.name)
+        # print(username2)
+        name = f"{username1}AND{username2}"
+        ultaName = f"{username2}AND{username1}"
+        existing_chat_room = ChatRoom.objects.filter(name=name) or ChatRoom.objects.filter(name=ultaName)
         if existing_chat_room:
-            return JsonResponse({'room_name':chatRoom.name }, status=200)
+            return JsonResponse({'room_name':name, 'sender':f'{username1}', 'receiver':f'{username2}'}, status=200)
         else:
-            ChatRoom.objects.create(name = chatRoom.name, sender = username1, receiver= username2)
-        return Response(status=status.HTTP_200_OK)
+            ChatRoom.objects.create(name = name, sender = username1, receiver= username2)
+        return Response({'room_name':name, 'sender':f'{username1}', 'receiver':f'{username2}'},status=status.HTTP_200_OK)
+    
+    
