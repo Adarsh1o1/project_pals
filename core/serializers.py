@@ -13,7 +13,7 @@ class Post_serializer(serializers.ModelSerializer):
         description = attrs.get('description')
         category = attrs.get('category')
         
-        Post.objects.create(user= user, username=username, title = title, description = description, category = category, email= user.email)
+        Post.objects.create(username=username, title = title, description = description, category = category, email= user.email)
         
         return attrs
 

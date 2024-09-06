@@ -21,7 +21,7 @@ class create_post(APIView):
         serializer = Post_serializer(data = data, context={'user':request.user,'username':request.user})
         if serializer.is_valid(raise_exception=True):
             # print(user,data)
-            return Response({"status":200,"m  sg": "Post created successfully"},status=status.HTTP_200_OK)
+            return Response({"status":200,"msg": "Post created successfully"},status=status.HTTP_200_OK)
         else:
             return Response({'status':status.HTTP_400_BAD_REQUEST, 'msg': 'something went wrong'},status=status.HTTP_400_BAD_REQUEST)
 
@@ -79,9 +79,7 @@ class show_any_user_post(generics.ListAPIView):
         username =self.kwargs['username']
         try:
             user= User.objects.get(username=username)
-            print(user.id)
-            posts=list(Post.objects.filter(user=user.id))
-            print(posts)
+            posts=list(Post.objects.filter(username=user.id))
             if posts:
                 serializer = User_Post_serializer(posts, many = True)
                 return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
@@ -91,11 +89,20 @@ class show_any_user_post(generics.ListAPIView):
             return Response({'status': status.HTTP_404_NOT_FOUND, "message":"no user found"})
 
 
-    # def get(self, request):
-    #    data = request.data
-    #    user = User.objects.get(username = data.get('username'))
-    #    print(user)
-    #    posts=list(Post.objects.filter(user=user))
-    #    print(posts)
-    #    serializer = User_Post_serializer(posts, many = True)
-    #    return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
+class searchPost(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [UserRenderer]
+    serializer_class = User_Post_serializer
+    queryset = Post.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        category =self.kwargs['category']
+        if category != 'all':
+            posts= list(Post.objects.filter(category=category))
+            serializer= User_Post_serializer(posts, many=True)
+            return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
+        else:
+            posts2= list(Post.objects.all())
+            serializer= User_Post_serializer(posts2, many=True)
+            print(serializer.data)
+            return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
