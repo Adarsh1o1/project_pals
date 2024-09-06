@@ -6,27 +6,24 @@ from django.dispatch import receiver
 
 
 
-class ChatRoom(models.Model):
-    name = models.CharField(max_length=255,) 
-    sender = models.ForeignKey(User, related_name='sender_chat_rooms', on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name='receiver_chat_rooms', on_delete=models.CASCADE)
-    
+class Chat(models.Model):
+    participants = models.ManyToManyField(User)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return self.name
+        return f"Chat between {self.participants.all()}"
 
-
+    
 class Message(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    reciever = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
-    message = models.CharField(max_length=10000, default='')
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages', default='000')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField(default='')
+    timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    time = models.DateTimeField(auto_now_add=True)
-    chat_room = models.ForeignKey(ChatRoom, default='', related_name='messages', on_delete=models.CASCADE)
     class Meta:
-        ordering = ['time']
-        verbose_name = "Message"
+        ordering = ['timestamp']
 
-    def __str__(self) -> str:
-        return f'{self.sender}'
+
+    def __str__(self):
+        return f"'{self.text}' from {self.sender} in chat {self.chat}"
     

@@ -26,9 +26,10 @@ class chatRoom(APIView):
         # print(username2)
         name = f"{username1}AND{username2}"
         ultaName = f"{username2}AND{username1}"
-        existing_chat_room = ChatRoom.objects.filter(name=name) or ChatRoom.objects.filter(name=ultaName)
+        existing_chat_room = Chat.objects.filter(name=name) or Chat.objects.filter(name=ultaName)
         if existing_chat_room:
-            return JsonResponse({'room_name':name, 'sender':f'{username1}', 'receiver':f'{username2}'}, status=200)
+            return JsonResponse({'room_name':name, 'sender':f'{username1}', 'receiver':f'{username2}'}, status=200) 
         else:
-            ChatRoom.objects.create(name = name, sender = username1, receiver= username2)
+            Chat.objects.create(name = name, sender = username1, receiver= username2)
         return Response({'room_name':name, 'sender':f'{username1}', 'receiver':f'{username2}'},status=status.HTTP_200_OK)
+

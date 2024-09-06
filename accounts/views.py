@@ -135,3 +135,4 @@ class searchUser(generics.ListAPIView):
             return Response({"details":"No users found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(profiles, many=True)
         return Response(serializer.data)
+    
