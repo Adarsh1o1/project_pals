@@ -18,6 +18,7 @@ class Post_serializer(serializers.ModelSerializer):
         return attrs
 
 class User_Post_serializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='username.username', read_only=True)
     class Meta:
         model = Post
         fields = ['username','id','title','category','description','posted_on', 'email'] 

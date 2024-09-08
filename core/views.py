@@ -43,10 +43,11 @@ class create_post(APIView):
 @permission_classes([IsAuthenticated])
 class show_all_posts(APIView):
     def get(self, request):
-        posts = list(Post.objects.all())
+        user = request.user
+        posts = list(Post.objects.exclude(username=user))
         random.shuffle(posts)
         random_posts = posts[:]
-        serializer = User_Post_serializer(posts, many=True)
+        serializer = User_Post_serializer(random_posts, many=True)
         return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
 
 @renderer_classes([UserRenderer])
