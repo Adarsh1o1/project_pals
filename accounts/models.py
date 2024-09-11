@@ -87,8 +87,9 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name =models.CharField(default="" ,max_length=300)
     bio = models.CharField(max_length=500)
-    image = models.ImageField(default="media/user_images/default.png", upload_to="media/user_images/")
+    image = models.ImageField(default="media/user_images/default.jpg", upload_to="media/user_images/")
     verified = models.BooleanField(default=False)
+    online_status= models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         # Set default full_name to user's first_name if not provided

@@ -1,6 +1,9 @@
 from .models import *
 from .models import Post
 from rest_framework import serializers
+from django.utils import timezone
+from datetime import timedelta
+from django.utils.timesince import timesince
 
 class Post_serializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +22,17 @@ class Post_serializer(serializers.ModelSerializer):
 
 class User_Post_serializer(serializers.ModelSerializer):
     username = serializers.CharField(source='username.username', read_only=True)
+    time_since_posted = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = ['username','id','title','category','description','posted_on', 'email'] 
+        fields = ['username','id','title','category','description','posted_on', 'email','time_since_posted'] 
+    
+    def get_time_since_posted(self, obj):
+        now = timezone.now()
+        duration = now - obj.posted_on
+        if duration.days >= 1:
+                return f"{duration.days} days ago"
+        hours = duration.seconds // 3600
+        return f"{hours} hours ago"
+        print(duration.days, duration.seconds)
+        return timesince(obj.posted_on, now)

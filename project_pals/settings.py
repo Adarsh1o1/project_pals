@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'project_pals.wsgi.application'
+# WSGI_APPLICATION = 'project_pals.wsgi.application'
 ASGI_APPLICATION = 'project_pals.asgi.application'
 
 REST_FRAMEWORK = {
@@ -170,12 +170,20 @@ EMAIL_USE_SSL = False
 
 # settings.py
 
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer",
+#     },
+# }
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
     },
 }
-
 
 CORS_ALLOWED_ORIGINS = [
     "https://4c1f-45-118-156-64.ngrok-free.app",

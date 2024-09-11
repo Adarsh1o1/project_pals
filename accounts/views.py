@@ -92,13 +92,12 @@ class profile(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MyProfileSerializer
     def get_object(self):
-        # Retrieve the profile of the authenticated user
         return self.request.user.profile
     
 class searchUser(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     renderer_classes = [UserRenderer]
-    serializer_class = ProfileSerializer
+    serializer_class = MyProfileSerializer
     queryset = Profile.objects.all()
 
     def list(self, request, *args, **kwargs):

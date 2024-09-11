@@ -75,9 +75,9 @@ class show_any_user_post(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     # queryset
     serializer_class = User_Post_serializer
-
     def list(self, request, *args, **kwargs):
         username =self.kwargs['username']
+        user=request.user
         try:
             user= User.objects.get(username=username)
             posts=list(Post.objects.filter(username=user.id))
@@ -99,7 +99,8 @@ class searchPost(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         category =self.kwargs['category']
         if category != 'all':
-            posts= list(Post.objects.filter(category=category))
+            user=request.user
+            posts= list(Post.objects.filter(category=category).exclude(username=user))
             serializer= User_Post_serializer(posts, many=True)
             return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
         else:

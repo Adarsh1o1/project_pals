@@ -30,7 +30,7 @@ class UserAdminModel(BaseUserAdmin):
     filter_horizontal = []
 
 class profileAdmin(admin.ModelAdmin):
-    list_display = ["user","full_name", "verified","image"]
+    list_display = ["user","full_name", "verified","image", "online_status"]
     list_editable = ["verified"]
 
 
