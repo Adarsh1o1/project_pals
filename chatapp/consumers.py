@@ -18,6 +18,7 @@ class testConsumer(AsyncWebsocketConsumer):
             user1 = self.scope["url_route"]["kwargs"]["userId"]
             user_ids=sorted([int(user0.id),int(user1)])
             self.room_group_name = f"chat_{user_ids[0]}--{user_ids[1]}"
+            print(self.room_group_name)
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
 
@@ -28,6 +29,7 @@ class testConsumer(AsyncWebsocketConsumer):
         message = text_data_json["message"]
         username = text_data_json['username']
         thread_name=self.room_group_name
+        
         #Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name, {"type": "chat.message", "message": message, 'username':username}
