@@ -94,45 +94,38 @@ class profile(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user.profile
     
-class searchUser(generics.ListAPIView):
+class searchUser(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     renderer_classes = [UserRenderer]
     serializer_class = MyProfileSerializer
-    queryset = Profile.objects.all()
     
-
-    def list(self, request, *args, **kwargs):
-        username =self.kwargs['username']
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-        logged_in_user = self.request.user
-        # users = Profile.objects.filter(
-        #     Q(user__username__icontains=username)|
-        #     Q(full_name__icontains=username)|
-        #     Q(user__email__icontains=username)
-        #     # ~Q(user=logged_in_user) 
-        # )
-
-        # if not users.exists():
-        #     return Response({"details":"No users found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        # serializer = self.get_serializer(users, many=True)
-        # return Response(serializer.data)
-        
-        if not isinstance(logged_in_user, AnonymousUser):
-            profiles = Profile.objects.filter(
-                Q(user__username__icontains=username) |
-                Q(full_name__icontains=username) |
-                Q(user__email__icontains=username),
-                ~Q(user=logged_in_user)
-            )
-        else:
-            profiles = Profile.objects.filter(
-                Q(user__username__icontains=username) |
-                Q(full_name__icontains=username) |
-                Q(user__email__icontains=username)
-            )
-        if not profiles.exists():
-            return Response({"details":"No users found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = self.get_serializer(profiles, many=True)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        username =self.kwargs['username']      
+        user=User.objects.get(username=username)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+        profile = Profile.objects.get(user=user)
+        serializer = self.get_serializer(profile)
+        return Response([serializer.data])
     
+class chat_profile(generics.GenericAPIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChatProfileSerializer
+    
+    def get(self, request, *args, **kwargs):
+        userid =self.kwargs['userid']
+        user=User.objects.get(id=userid)
+        chat_profile = Profile.objects.get(user=user)
+        serializer = self.get_serializer(chat_profile)
+        return Response([serializer.data],status=status.HTTP_200_OK)
+
+# class chat_profile(generics.GenericAPIView):
+#     renderer_classes = [UserRenderer]
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = ChatProfileSerializer
+    
+#     def get(self, request, *args, **kwargs):
+#         userid =self.kwargs['userid']
+#         user=User.objects.get(id=userid)
+#         chat_profile = Profile.objects.get(user=user)
+#         serializer = ChatProfileSerializer(chat_profile,context={'request': request})
+#         return Response({"payload": serializer.data},status=status.HTTP_200_OK)

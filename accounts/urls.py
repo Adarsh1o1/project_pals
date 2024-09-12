@@ -9,4 +9,5 @@ urlpatterns = [
     path('profile/', profile.as_view()),
     path('change-password/', ChangePassword.as_view()),
     path('search/<username>', searchUser.as_view()),
+    path('chat_profile/<userid>', chat_profile.as_view()),
 ]

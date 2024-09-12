@@ -58,12 +58,11 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.save()
         return attrs
     
-class ProfileSerializer(serializers.ModelSerializer):
+class ChatProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
-    rating = serializers.CharField(source='user.rating', read_only=True)
     class Meta:
         model = Profile
-        fields = ["username","full_name", "bio","verified","image", "rating","online_status"]
+        fields = ["username","full_name","image","online_status"]
 
 class MyProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=False)
