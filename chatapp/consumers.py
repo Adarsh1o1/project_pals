@@ -6,7 +6,7 @@ from django.contrib.auth.models import AnonymousUser
 from channels.db import database_sync_to_async
 from accounts.models import User,Profile
 from asgiref.sync import sync_to_async
-
+from .models import chatModel
 class testConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         token_key = self.scope['query_string'].decode().split("=")[1]
@@ -27,10 +27,13 @@ class testConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
         username = text_data_json['username']
+        thread_name=self.room_group_name
         #Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name, {"type": "chat.message", "message": message, 'username':username}
         )
+        await self.save_message(username, message, thread_name)
+
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -42,6 +45,10 @@ class testConsumer(AsyncWebsocketConsumer):
         username = event["username"]
         # Send message to WebSocket
         await self.send(text_data=json.dumps({"message": message,'username':username}))
+
+    @database_sync_to_async
+    def save_message(self, username,message,thread_name):
+        chatModel.objects.create(sender=username, Message=message, thread_name=thread_name)
 
     @database_sync_to_async
     def get_user(self, token_key):
@@ -65,12 +72,14 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         data=json.loads(text_data)
         username=data['username']
-        user= await sync_to_async(User.objects.get)(username=username)
+        userid= await sync_to_async(User.objects.get)(username=username)
+        self.userid = userid
         online_status=data['online_status']
-        # print(username, online_status)
-        await self.ChangeOnlineStatus(user,online_status)
+        print(username, online_status)
+        await self.ChangeOnlineStatus(userid,online_status)
 
     async def disconnect(self, message):
+        await self.ChangeOnlineStatus(self.userid,False)
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     @database_sync_to_async

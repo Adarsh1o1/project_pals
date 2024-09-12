@@ -99,6 +99,7 @@ class searchUser(generics.ListAPIView):
     renderer_classes = [UserRenderer]
     serializer_class = MyProfileSerializer
     queryset = Profile.objects.all()
+    
 
     def list(self, request, *args, **kwargs):
         username =self.kwargs['username']

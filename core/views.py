@@ -65,7 +65,7 @@ class show_user_post(generics.ListAPIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
     serializer_class = User_Post_serializer
-    
+                    
     def get_queryset(self):
        return Post.objects.filter(user=self.request.user)
     

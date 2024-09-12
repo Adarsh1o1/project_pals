@@ -3,5 +3,5 @@ from django.urls import path,include
 from .views import *
 
 urlpatterns = [
-    path('chatRoom/', chatRoom.as_view() ),
+    path('chatHistory/', chatHistory.as_view() ),
 ]

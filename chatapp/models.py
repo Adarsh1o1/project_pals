@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 # Create your models here.
 
+
 class chatModel(models.Model):
     sender = models.CharField(max_length=100, default=None)
     Message = models.TextField(null=True, blank=True)
@@ -14,5 +15,5 @@ class chatModel(models.Model):
         ordering = ['timestamp']
 
     def __str__(self):
-        return self.message
+        return self.Message
     
