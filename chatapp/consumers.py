@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import AnonymousUser
 from channels.db import database_sync_to_async
 from accounts.models import User,Profile
-from asgiref.sync import sync_to_async
+# from asgiref.sync import sync_to_async
 from .models import chatModel
 class testConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -18,7 +18,7 @@ class testConsumer(AsyncWebsocketConsumer):
             user1 = self.scope["url_route"]["kwargs"]["userId"]
             user_ids=sorted([int(user0.id),int(user1)])
             self.room_group_name = f"chat_{user_ids[0]}--{user_ids[1]}"
-            print(self.room_group_name)
+            # print(self.room_group_name)
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
 
@@ -74,18 +74,16 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         data=json.loads(text_data)
         username=data['username']
-        userid= await sync_to_async(User.objects.get)(username=username)
-        self.userid = userid
         online_status=data['online_status']
-        print(username, online_status)
-        await self.ChangeOnlineStatus(userid,online_status)
+        await self.ChangeOnlineStatus(username,online_status)
 
-    async def disconnect(self, message):
-        await self.ChangeOnlineStatus(self.userid,False)
+    async def disconnect(self,message):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     @database_sync_to_async
-    def ChangeOnlineStatus(self, user, online_status):
+    def ChangeOnlineStatus(self, username, online_status):
+        # print("in change online status",username,online_status)
+        user = User.objects.get(username=username)
         user=Profile.objects.get(user=user)
         if online_status==True:
             user.online_status = True

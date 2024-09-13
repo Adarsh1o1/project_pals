@@ -22,10 +22,11 @@ class Post_serializer(serializers.ModelSerializer):
 
 class User_Post_serializer(serializers.ModelSerializer):
     username = serializers.CharField(source='username.username', read_only=True)
+    userid = serializers.CharField(source='username.id', read_only=True)
     time_since_posted = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = ['username','id','title','category','description','posted_on', 'email','time_since_posted'] 
+        fields = ['username','userid','title','category','description','posted_on', 'email','time_since_posted'] 
     
     def get_time_since_posted(self, obj):
         now = timezone.now()

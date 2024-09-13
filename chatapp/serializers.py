@@ -40,3 +40,18 @@ class chatSerializer(serializers.ModelSerializer):
     class Meta:
         model = chatModel
         fields = ['sender', 'Message', 'thread_name', 'date', 'time']
+
+
+class ChatRequestSerializer(serializers.ModelSerializer):
+    time=serializers.SerializerMethodField()
+    class Meta:
+        model= ChatRequest
+        fields= "__all__"
+    
+    def time(self, obj):
+        now = timezone.now()
+        duration = now - obj.created_at
+        if duration.days >= 1:
+                return f"{duration.days} days ago"
+        hours = duration.seconds // 3600
+        return f"{hours} hours ago"
