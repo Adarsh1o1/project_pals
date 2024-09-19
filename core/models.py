@@ -7,7 +7,7 @@ class Post(models.Model):
     title = models.CharField(max_length=100)
     username=models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=50)
-    description = models.CharField(max_length= 250)
+    description = models.CharField(max_length= 10000)
     posted_on = models.DateTimeField(auto_now_add=True)
     email = models.EmailField(default='')
 
