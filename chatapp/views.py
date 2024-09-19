@@ -16,23 +16,46 @@ from .serializers import chatSerializer,ChatRequestSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-@method_decorator(csrf_exempt, name='dispatch')
+# @method_decorator(csrf_exempt, name='dispatch')
+# class Request(APIView):
+#     permission_classes = [IsAuthenticated]
+#     renderer_classes = [UserRenderer]
+    
+#     def post(self, request):
+#         # Create a chat request
+#         from_user = request.user
+#         to_user = User.objects.get(username=request.data['to_user'])
+#         # Check if there's already a request
+#         if ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='pending').exists():
+#             req=ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='pending')
+#             print(req.status)
+#             return Response({'detail': f'Request already {req.status}.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Create new chat request
+        # chat_request = ChatRequest(from_user=from_user, to_user=to_user)
+        # chat_request.save()
+        # return Response({"id": chat_request.id,'detail': 'Chat request sent.'}, status=status.HTTP_201_CREATED)
+        
 class Request(APIView):
     permission_classes = [IsAuthenticated]
     renderer_classes = [UserRenderer]
-    
+
     def post(self, request):
         # Create a chat request
         from_user = request.user
         to_user = User.objects.get(username=request.data['to_user'])
+
         # Check if there's already a request
-        if ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='pending').exists():
-            return Response({'detail': 'Request already sent.'}, status=status.HTTP_400_BAD_REQUEST)
+        existing_request = ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='pending').first()
         
-        # Create new chat request
-        chat_request = ChatRequest(from_user=from_user, to_user=to_user)
-        chat_request.save()
-        return Response({"id": chat_request.id,'detail': 'Chat request sent.'}, status=status.HTTP_201_CREATED)
+        if existing_request:
+            return Response({'detail': f'Request already {existing_request.status}.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # If no request exists, create a new one
+        new_request = ChatRequest.objects.create(from_user=from_user, to_user=to_user)
+        return Response({'detail': 'Chat request sent successfully.'}, status=status.HTTP_201_CREATED)
+
+        
+
     
     def get(self, request, pk,action):
         # Accept or decline the request

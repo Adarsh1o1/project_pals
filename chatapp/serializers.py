@@ -44,11 +44,13 @@ class chatSerializer(serializers.ModelSerializer):
 
 class ChatRequestSerializer(serializers.ModelSerializer):
     time=serializers.SerializerMethodField()
+    from_user = serializers.CharField(source='from_user.username', read_only=True)
+    to_user = serializers.CharField(source='to_user.username', read_only=True)
     class Meta:
         model= ChatRequest
-        fields= "__all__"
+        fields= ["id",'status', 'time','from_user','to_user']
     
-    def time(self, obj):
+    def get_time(self, obj):
         now = timezone.now()
         duration = now - obj.created_at
         if duration.days >= 1:
