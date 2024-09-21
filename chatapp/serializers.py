@@ -57,3 +57,26 @@ class ChatRequestSerializer(serializers.ModelSerializer):
                 return f"{duration.days} days ago"
         hours = duration.seconds // 3600
         return f"{hours} hours ago"
+    
+class RecentChatSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='name.full_name', read_only=True)
+    userid = serializers.CharField(source='name.user.id', read_only=True)
+    last_updated=serializers.SerializerMethodField()
+    class Meta:
+          model = Recent_chat
+          fields= ["name","userid","last_message", "last_updated"]
+
+    def get_last_updated(self, obj):
+        now = timezone.now()
+        duration = now - obj.last_updated
+        if duration.days >= 1:
+                return f"{duration.days} days ago"
+        else:
+            hours = duration.seconds // 3600
+            minutes = (duration.seconds % 3600) // 60
+
+            if hours > 0:
+                return f"{hours} hours {minutes} minutes ago" if minutes > 0 else f"{hours} hours ago"
+            else:
+                return f"{minutes} minutes ago" if minutes > 0 else "Just now"
+        

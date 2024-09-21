@@ -26,7 +26,7 @@ class User_Post_serializer(serializers.ModelSerializer):
     time_since_posted = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = ['username','userid','title','category','description','posted_on', 'email','time_since_posted'] 
+        fields = ['id','username','userid','title','category','description','posted_on', 'email','time_since_posted'] 
     
     def get_time_since_posted(self, obj):
         now = timezone.now()
