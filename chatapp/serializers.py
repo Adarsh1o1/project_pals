@@ -76,7 +76,7 @@ class RecentChatSerializer(serializers.ModelSerializer):
             minutes = (duration.seconds % 3600) // 60
 
             if hours > 0:
-                return f"{hours} hours {minutes} minutes ago" if minutes > 0 else f"{hours} hours ago"
+                return f"{hours} hours ago"
             else:
                 return f"{minutes} minutes ago" if minutes > 0 else "Just now"
         
