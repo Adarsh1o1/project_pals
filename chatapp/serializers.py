@@ -3,22 +3,7 @@ from accounts.models import User,Profile
 from rest_framework import serializers
 from datetime import datetime
 from django.utils import timezone
-
-# class chatSerializer(serializers.ModelSerializer):
-#     time=  serializers.SerializerMethodField()
-#     class Meta:
-#         model = chatModel
-#         fields = ['sender', 'Message', 'thread_name', 'time','time']
-
-
-#     def get_time(self, obj):
-#         # Format the timestamp to a readable format
-#         datetime_obj = timezone.localtime(obj.timestamp) 
-#         return datetime_obj.strftime("%B %d, %Y %H:%M")
-#     def get_time(self, obj):
-#         # Format the timestamp to a readable format
-#         datetime_obj = timezone.localtime(obj.timestamp) 
-#         return datetime_obj.strftime("%d/%m/%y %I:%M %p")
+from django.conf import settings
 
 
 class chatSerializer(serializers.ModelSerializer):
@@ -62,21 +47,31 @@ class RecentChatSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='name.full_name', read_only=True)
     userid = serializers.CharField(source='name.user.id', read_only=True)
     last_updated=serializers.SerializerMethodField()
+    online_status= serializers.BooleanField(source="name.online_status",read_only=True)
+    image= serializers.SerializerMethodField()
     class Meta:
           model = Recent_chat
-          fields= ["name","userid","last_message", "last_updated"]
+          fields= ["name","userid","last_message", "last_updated","online_status","image"]
+
+    def get_image(self, obj):
+        request = self.context.get('request', None)
+        if obj.name.image:
+            image_url = obj.name.image.url
+            domain = "http://127.0.0.1:8000/" 
+            return f"{domain}{image_url}"  
+        return None
 
     def get_last_updated(self, obj):
         now = timezone.now()
         duration = now - obj.last_updated
         if duration.days >= 1:
-                return f"{duration.days} days ago"
+                return f"{duration.days}d"
         else:
             hours = duration.seconds // 3600
             minutes = (duration.seconds % 3600) // 60
 
             if hours > 0:
-                return f"{hours} hours ago"
+                return f"{hours}h"
             else:
-                return f"{minutes} minutes ago" if minutes > 0 else "Just now"
+                return f"{minutes}m" if minutes > 0 else "Just now"
         

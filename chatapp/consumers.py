@@ -81,6 +81,22 @@ class testConsumer(AsyncWebsocketConsumer):
         else:
             Recent_chat.objects.create(name = profile1,thread_name=thread,sender=profile, last_message=message,last_updated=timezone.now())
 
+        user=User.objects.get(id=self.receiver)
+        user1=User.objects.get(username=username)
+        profile=Profile.objects.get(user=user)
+        profile1=Profile.objects.get(user=user1)
+        thread= f'chat_{user.id}--{user1.id}'
+        # Recent_chat.objects.get_or_create(thread_name=thread_name,sender=profile.user, last_message=message,last_updated=timezone.now())
+        if Recent_chat.objects.filter(thread_name=thread).exists():
+            recentchat = Recent_chat.objects.get(thread_name=thread)
+            recentchat.name = profile1
+            recentchat.sender = profile
+            recentchat.last_message = message
+            recentchat.last_updated = timezone.now()
+            recentchat.save()
+        else:
+            Recent_chat.objects.create(name = profile1,thread_name=thread,sender=profile, last_message=message,last_updated=timezone.now())
+
     @database_sync_to_async
     def get_user(self, token_key):
         try:
@@ -154,7 +170,7 @@ class RecentChat(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_recent_chats(self):
-        obj = list(Recent_chat.objects.filter(thread_name__startswith= f'chat_{self.user}' ))
+        obj = list(Recent_chat.objects.filter(thread_name__startswith= f'chat_{self.user}' ).order_by('-last_updated'))
         serializer = RecentChatSerializer(obj, many=True)
         return serializer.data
     
