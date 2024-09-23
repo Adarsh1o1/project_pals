@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser     
 from .models import *
 from .serializers import chatSerializer,ChatRequestSerializer
+from rest_framework import generics
 
         
 class Request(APIView):
@@ -51,6 +52,16 @@ class Request(APIView):
                 return Response({'detail': 'Declined.'}, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'Invalid action.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class ChatRequestStatus(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [UserRenderer]
+    queryset = ChatRequest.objects.all()
+    serializer_class = ChatRequestSerializer
+    lookup_field = 'id'
+    
+
+  
 
 class PendingRequestsView(APIView):
     permission_classes = [IsAuthenticated]

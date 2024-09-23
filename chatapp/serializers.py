@@ -42,6 +42,7 @@ class ChatRequestSerializer(serializers.ModelSerializer):
                 return f"{duration.days} days ago"
         hours = duration.seconds // 3600
         return f"{hours} hours ago"
+
     
 class RecentChatSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='name.full_name', read_only=True)
