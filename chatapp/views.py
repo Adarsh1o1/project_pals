@@ -16,36 +16,69 @@ from .serializers import chatSerializer,ChatRequestSerializer
 from rest_framework import generics
 
         
+# class Request(APIView):
+#     permission_classes = [IsAuthenticated]
+#     renderer_classes = [UserRenderer]
+
+#     def post(self, request):
+#         # Create a chat request
+#         from_user = request.user
+#         to_user = User.objects.get(username=request.data['to_user'])
+#         # Check if there's already a request
+#         existing_request = ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='pending').first() or ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='accepted').first()
+#         if existing_request:
+#             return Response({'detail':existing_request.status},)
+
+#         # If no request exists, create a new one
+#         ChatRequest.objects.create(from_user=from_user, to_user=to_user)
+#         return Response({'detail': 'Pending'}, status=status.HTTP_201_CREATED)
+
+    
+#     def get(self, request, pk,action):
+#         # Accept or decline the request
+#         print(pk,action)
+#         chat_request = ChatRequest.objects.get(id=pk, to_user=request.user)
+#         if chat_request:
+#             if action == 'accept':
+#                 chat_request.status = 'accepted'
+#                 chat_request.save()
+#                 print(chat_request.from_user.id)
+#                 return Response({'detail': 'Accepted.','from_user':f'{chat_request.from_user.id}'}, status=status.HTTP_200_OK)
+#             elif action == 'decline':
+#                 chat_request.status = 'declined'
+#                 chat_request.save()
+#                 return Response({'detail': 'Declined.'}, status=status.HTTP_200_OK)
+#         else:
+#             return Response({'detail': 'Invalid action.'}, status=status.HTTP_400_BAD_REQUEST)
+
 class Request(APIView):
     permission_classes = [IsAuthenticated]
     renderer_classes = [UserRenderer]
 
     def post(self, request):
-        # Create a chat request
         from_user = request.user
         to_user = User.objects.get(username=request.data['to_user'])
-        # Check if there's already a request
-        existing_request = ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='pending').first() or ChatRequest.objects.filter(from_user=from_user, to_user=to_user, status='accepted').first()
+
+        existing_request = ChatRequest.objects.filter(
+            from_user=from_user, to_user=to_user, status__in=['pending', 'accepted']
+        ).first() or ChatRequest.objects.filter(
+            from_user=to_user, to_user=from_user, status__in=['pending', 'accepted']
+        ).first()
+
         if existing_request:
-            return Response({'detail':existing_request.status},)
+            return Response({'detail': existing_request.status})
 
-        # If no request exists, create a new one
-        ChatRequest.objects.create(from_user=from_user, to_user=to_user)
-        return Response({'detail': 'Pending'}, status=status.HTTP_201_CREATED)
+        new_req= ChatRequest.objects.create(from_user=from_user, to_user=to_user)
+        return Response({'detail': new_req.status,'id':new_req.id}, status=status.HTTP_201_CREATED)
 
+    def get(self, request, pk, action):
+        chat_request = ChatRequest.objects.get(id=pk)
         
-
-    
-    def get(self, request, pk,action):
-        # Accept or decline the request
-        print(pk,action)
-        chat_request = ChatRequest.objects.get(id=pk, to_user=request.user)
-        if chat_request:
+        if chat_request.to_user == request.user or chat_request.from_user == request.user:
             if action == 'accept':
                 chat_request.status = 'accepted'
                 chat_request.save()
-                print(chat_request.from_user.id)
-                return Response({'detail': 'Accepted.','from_user':f'{chat_request.from_user.id}'}, status=status.HTTP_200_OK)
+                return Response({'detail': 'Accepted.', 'from_user': f'{chat_request.from_user.id}'}, status=status.HTTP_200_OK)
             elif action == 'decline':
                 chat_request.status = 'declined'
                 chat_request.save()
@@ -58,8 +91,14 @@ class ChatRequestStatus(generics.RetrieveAPIView):
     renderer_classes = [UserRenderer]
     queryset = ChatRequest.objects.all()
     serializer_class = ChatRequestSerializer
-    lookup_field = 'id'
-    
+    def get_object(self,):
+        from_user = self.request.user
+        to_user= self.kwargs.get('id')
+        try:
+            # return ChatRequest.objects.get(from_user=from_user, to_user=to_user)
+            return ChatRequest.objects.filter(from_user=from_user, to_user=to_user).first() or ChatRequest.objects.filter(from_user=to_user, to_user=from_user).first()
+        except ChatRequest.DoesNotExist:
+            return Response({'detail': 'not found.'}, status=status.HTTP_400_BAD_REQUEST)
 
   
 
@@ -68,7 +107,6 @@ class PendingRequestsView(APIView):
     renderer_classes = [UserRenderer]
 
     def get(self, request):
-        # Get pending requests where the current user is the receiver
         pending_requests = ChatRequest.objects.filter(to_user=request.user, status='pending')
         serializer = ChatRequestSerializer(pending_requests, many=True)
         return Response(serializer.data)

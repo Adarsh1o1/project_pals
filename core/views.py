@@ -11,6 +11,7 @@ from .renderers import UserRenderer
 from .helpers import send_connect_mail   
 import random 
 from rest_framework import generics
+from django.core.paginator import Paginator
 
 @renderer_classes([UserRenderer])
 @permission_classes([IsAuthenticated])
@@ -39,16 +40,50 @@ class create_post(APIView):
         post.delete()
         return Response({"response": "Post deleted successfully"}, status=status.HTTP_202_ACCEPTED)
 
-@renderer_classes([UserRenderer])
-@permission_classes([IsAuthenticated])
+# @renderer_classes([UserRenderer])
+# @permission_classes([IsAuthenticated])
+# class show_all_posts(APIView):
+#     def get(self, request):
+#         user = request.user
+#         posts = list(Post.objects.exclude(username=user))
+#         random.shuffle(posts)
+#         random_posts = posts[:]
+#         serializer = User_Post_serializer(random_posts, many=True)
+#         return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
+
+
 class show_all_posts(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
+        # posts = Post.objects.all().order_by('?')
         user = request.user
+        seed = request.GET.get('seed', str(random.randint(0, 1000000)))
         posts = list(Post.objects.exclude(username=user))
+        random.seed(seed)  
         random.shuffle(posts)
-        random_posts = posts[:]
-        serializer = User_Post_serializer(random_posts, many=True)
-        return Response({'status': status.HTTP_200_OK, 'payload':serializer.data})
+
+        # Pagination
+        paginator = Paginator(posts, 5)
+        page_number = request.GET.get('page', 1)  
+        page_obj = paginator.get_page(page_number)
+
+        # Serialize the posts
+        serializer = User_Post_serializer(page_obj, many=True)
+
+        # Build the next and previous URLs
+        next_page = f'http://localhost:8000/api/core/show-post/?page={page_obj.next_page_number()}&seed={seed}' if page_obj.has_next() else None
+        previous_page = f'http://localhost:8000/api/core/show-post/?page={page_obj.previous_page_number()}&seed={seed}' if page_obj.has_previous() else None
+
+        # Return paginated posts and navigation info
+        return Response({
+            'posts': serializer.data,
+            'count': paginator.count,
+            'num_pages': paginator.num_pages,
+            'current_page': page_obj.number,
+            'next_page': next_page,
+            'previous_page': previous_page,
+        })
 
 @renderer_classes([UserRenderer])
 @permission_classes([IsAuthenticated])
