@@ -39,8 +39,7 @@ A collaborative platform connecting innovators and skilled peers to build teams,
 - [ ] Enhanced Privacy Controls
 
 
-## 📜 License
-This project is licensed under the MIT License.
+
 
 ---
 Made with ❤️ by [Adarsh](https://github.com/Adarsh1o1)
